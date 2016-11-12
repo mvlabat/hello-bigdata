@@ -1,0 +1,26 @@
+@(errors: List[String] = List())
+<html>
+<body>
+
+@if(!errors.isEmpty) {
+<div class="errors">
+    <ul class="errors-list">
+        @for(error <- errors) {
+        <li>@error</li>
+        }
+    </ul>
+</div>
+}
+
+<form method="post">
+    <div>
+        E-mail: <input type="email" name="email">
+    </div>
+    <div>
+        Password: <input type="password" name="password">
+    </div>
+    <input type="submit" value="Submit">
+</form>
+
+</body>
+</html>
