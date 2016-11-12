@@ -7,7 +7,7 @@ sbt run
 
 ## Prerequisites
 This application uses facebook Graph API. Currently it can be run only
-on `http://mvlabat.host:8080/` domain address.
+on `http://mvlabat.host:8080/` domain address. This requires to edit `/etc/hosts` a little bit.
 
 This application expects that mongodb database is already created and
 collections are predefined. Look at `/src/main/scala/Database.scala`.
