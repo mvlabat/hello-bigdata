@@ -13,12 +13,14 @@ This application expects that mongodb database is already created and
 collections are predefined. Look at `/src/main/scala/Database.scala`.
 
 Example of **users** collection structure:
+```
 > db.users.find().pretty()
 {
         "_id" : ObjectId("582660f74e9ab2d84de2b782"),
         "email" : "someone@gmail.com",
         "password" : "123"
 }
+```
 
 Example of **ids** collection structure:
 ```
