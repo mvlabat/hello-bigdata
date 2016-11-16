@@ -44,4 +44,3 @@ Example of **ids** collection structure:
     * (It appeared impossible because Facebook requires app validation for this permission: https://developers.facebook.com/docs/facebook-login/permissions#reference-user_posts)
     * But for demonstration purpose the application retrieves facebook user id
 * Saving results to database
-    * For some reason even saving only a user id leads to exceptions. My first guess is that I should implement Database as an Actor class
