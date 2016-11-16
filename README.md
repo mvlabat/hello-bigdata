@@ -38,9 +38,9 @@ Example of **ids** collection structure:
 * User login (check `http://mvlabat.host:8080/login`)
 * Facebook authorization using Graph API (check `http://mvlabat.host:8080/oauth`)
 * Scheduling email sending (only scheduling, no emails are actually sent, configuring smtp is a TODO task)
+* Saving results to database (only user id, see below)
 
 ## Things not implemented
 * Scrapping all the user posts and messages
     * (It appeared impossible because Facebook requires app validation for this permission: https://developers.facebook.com/docs/facebook-login/permissions#reference-user_posts)
     * But for demonstration purpose the application retrieves facebook user id
-* Saving results to database
