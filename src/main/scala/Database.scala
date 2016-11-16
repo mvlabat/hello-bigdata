@@ -1,13 +1,17 @@
-import com.mongodb.spark.MongoSpark
+import akka.actor.Actor
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.SparkSession
 import com.mongodb.spark.sql._
-import org.apache.spark.sql.functions._
+
+case class CheckEmailDoesNotExistMessage(email: String)
+case class CheckUserExistsMessage(email: String, password: String)
+case class CreateUserMessage(email: String, password: String)
+case class SetUserIdMessage(email: String, id: String)
 
 /**
   * Handles mongodb sessions and returns specific model data
   */
-class Database {
+class Database extends Actor {
 
   case class User(email: String, password: String)
   case class Id(email: String, id: String)
@@ -30,24 +34,40 @@ class Database {
     .config("spark.mongodb.output.collection", "ids")
     .getOrCreate()
 
-  def emailDoesNotExist(email: String): Boolean = {
+  def receive = {
+    case CheckEmailDoesNotExistMessage(email) =>
+      sender() ! emailDoesNotExist(email)
+
+    case CheckUserExistsMessage(email, password) =>
+      sender() ! userExists(email, password)
+
+
+    case CreateUserMessage(email, password) =>
+      createUser(email, password)
+      sender() ! self
+
+    case SetUserIdMessage(email, id) =>
+      setUserId(email, id)
+  }
+
+  private def emailDoesNotExist(email: String): Boolean = {
     val df = userSession.loadFromMongoDB().toDF()
     df.filter(df("email") equalTo email)
       .count() == 0
   }
 
-  def userExists(email: String, password: String) = {
+  private def userExists(email: String, password: String) = {
     val df = userSession.loadFromMongoDB().toDF()
     df.filter(df("email").equalTo(email) and df("password").equalTo(password))
       .count() == 1
   }
 
-  def createUser(email: String, password: String) = {
+  private def createUser(email: String, password: String) = {
     val rdd = userSession.sparkContext.parallelize(Seq(User(email, password)))
     userSession.createDataFrame(rdd).saveToMongoDB()
   }
 
-  def setUserId(email: String, id: String) = {
+  private def setUserId(email: String, id: String) = {
     val df = userSession.loadFromMongoDB().toDF()
     val emailExists = df.filter(df("email").equalTo(email)).count() == 1
 

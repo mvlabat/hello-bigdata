@@ -1,4 +1,5 @@
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef}
+
 import scala.util.parsing.json.JSON
 import spray.http._
 import spray.client.pipelining._
@@ -7,7 +8,7 @@ import scala.concurrent.Future
 
 case class ParseFacebook(email: String, accessToken: String)
 
-class FacebookParser(database: Database) extends Actor {
+class FacebookParser(database: ActorRef) extends Actor {
 
   import context.dispatcher
 
@@ -25,7 +26,7 @@ class FacebookParser(database: Database) extends Actor {
           val id = JSON.parseFull(httpResponse.entity.asString).get.asInstanceOf[Map[String, String]]("id")
           // TODO: seems like there are some problems with concurrency that lead to exceptions
           // TODO: maybe we should refactor database to be an Actor too
-          database.setUserId(email, id)
+          database ! SetUserIdMessage(email, id)
       }
   }
 

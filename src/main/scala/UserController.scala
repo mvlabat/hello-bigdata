@@ -1,8 +1,17 @@
-import scala.collection.mutable.ListBuffer
+import akka.actor.ActorRef
+import akka.pattern.ask
+import akka.util.Timeout
 
-class UserController(database: Database) {
+import scala.collection.mutable.ListBuffer
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
+class UserController(database: ActorRef) {
 
   private val emailRegex = """^[a-zA-Z0-9\.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$""".r
+
+  private val timeoutDuration = 5.seconds
+  private implicit val timeout = Timeout(timeoutDuration)
 
   private def checkEmail(e: String): Boolean = e match {
     case str: String if str.trim.isEmpty => false
@@ -17,8 +26,12 @@ class UserController(database: Database) {
       case Some(email) =>
         if (!checkEmail(email))
           errors += "E-mail is invalid"
-        else if (!database.emailDoesNotExist(email))
-          errors += "Such E-mail already exists"
+        else {
+          val future = database ? CheckEmailDoesNotExistMessage(email)
+          val emailExists = !Await.result(future.mapTo[Boolean], timeoutDuration)
+          if (emailExists)
+            errors += "Such E-mail already exists"
+        }
 
       case None =>
         errors += "E-mail is not entered"
@@ -42,9 +55,12 @@ class UserController(database: Database) {
 
   def createUser(formInput: Map[String, String]) = {
     // We expect formInput being already validated.
-    database.createUser(formInput("email"), formInput("password"))
+    database ! CreateUserMessage(formInput("email"), formInput("password"))
   }
 
-  def userExists(email: String, password: String) = database.userExists(email, password)
+  def userExists(email: String, password: String) = {
+    val future = database ? CheckUserExistsMessage(email, password)
+    Await.result(future.mapTo[Boolean], timeoutDuration)
+  }
 
 }

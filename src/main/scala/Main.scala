@@ -12,7 +12,7 @@ import Mail._
 object Main extends App {
   implicit val system = ActorSystem("test_task")
 
-  val database = new Database
+  val database = system.actorOf(Props[Database])
   val userController = new UserController(database)
   val facebookParser = system.actorOf(Props(new FacebookParser(database)))
   val service = system.actorOf(Props(new Router(userController, facebookParser)), "router-service")
